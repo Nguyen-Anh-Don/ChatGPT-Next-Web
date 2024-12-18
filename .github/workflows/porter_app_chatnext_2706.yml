@@ -1,0 +1,29 @@
+"on":
+    push:
+        branches:
+            - main
+name: Deploy to chatnext
+jobs:
+    porter-deploy:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+            - name: Set Github tag
+              id: vars
+              run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+            - name: Setup porter
+              uses: porter-dev/setup-porter@v0.1.0
+            - name: Deploy stack
+              timeout-minutes: 30
+              run: exec porter apply
+              env:
+                PORTER_APP_NAME: chatnext
+                PORTER_CLUSTER: "2706"
+                PORTER_DEPLOYMENT_TARGET_ID: 6f8a3a35-7995-41f5-864c-3f7b0dbf2561
+                PORTER_HOST: https://cloud.porter.run
+                PORTER_PR_NUMBER: ${{ github.event.number }}
+                PORTER_PROJECT: "2819"
+                PORTER_REPO_NAME: ${{ github.event.repository.name }}
+                PORTER_TAG: ${{ steps.vars.outputs.sha_short }}
+                PORTER_TOKEN: ${{ secrets.PORTER_APP_2819_2706 }}
